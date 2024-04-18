@@ -5,42 +5,60 @@ t_log* logger;
 int iniciar_servidor(void)
 {
 	// Quitar esta línea cuando hayamos terminado de implementar la funcion
-	assert(!"no implementado!");
-
+	// assert(!"no implementado!");
+	int err;
 	int socket_servidor;
 
-	struct addrinfo hints, *servinfo, *p;
+	struct addrinfo hints, *server_info, *p;
 
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_flags = AI_PASSIVE;
 
-	getaddrinfo(NULL, PUERTO, &hints, &servinfo);
+	err = getaddrinfo(NULL, PUERTO, &hints, &server_info);
 
 	// Creamos el socket de escucha del servidor
+	socket_servidor = socket(server_info->ai_family,
+                        	 server_info->ai_socktype,
+                        	 server_info->ai_protocol);
 
 	// Asociamos el socket a un puerto
+	err = bind(socket_servidor, server_info->ai_addr, server_info->ai_addrlen);
+	// ESTE fd_escucha DEBE SER CUALQUIER NOMBRE O DEBE SER
+	// SI O SI EL NOMBRE DEL SOCKER DEL SERVIDOR?
+	// POR EJEMPLO socket_servidor
+
 
 	// Escuchamos las conexiones entrantes
+	err = listen(socket_servidor, SOMAXCONN);
 
-	freeaddrinfo(servinfo);
+
+	freeaddrinfo(server_info);
 	log_trace(logger, "Listo para escuchar a mi cliente");
 
 	return socket_servidor;
 }
 
+
+
+
 int esperar_cliente(int socket_servidor)
 {
 	// Quitar esta línea cuando hayamos terminado de implementar la funcion
-	assert(!"no implementado!");
+	// assert(!"no implementado!");
 
 	// Aceptamos un nuevo cliente
 	int socket_cliente;
+	socket_cliente = accept(socket_servidor, NULL, NULL);
+
 	log_info(logger, "Se conecto un cliente!");
 
 	return socket_cliente;
 }
+
+
+
 
 int recibir_operacion(int socket_cliente)
 {
@@ -54,6 +72,9 @@ int recibir_operacion(int socket_cliente)
 	}
 }
 
+
+
+
 void* recibir_buffer(int* size, int socket_cliente)
 {
 	void * buffer;
@@ -65,13 +86,19 @@ void* recibir_buffer(int* size, int socket_cliente)
 	return buffer;
 }
 
+
+
+
 void recibir_mensaje(int socket_cliente)
 {
 	int size;
 	char* buffer = recibir_buffer(&size, socket_cliente);
-	log_info(logger, "Me llego el mensaje %s", buffer);
+	log_info(logger, "Me llego el mensaje: %s", buffer);
 	free(buffer);
 }
+
+
+
 
 t_list* recibir_paquete(int socket_cliente)
 {
